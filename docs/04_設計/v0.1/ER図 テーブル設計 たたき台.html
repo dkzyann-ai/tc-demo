@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>ER図・テーブル設計（たたき台）</title>
+<style>
+  :root{
+    --bg:#F1F3EE; --panel:#FFFFFF; --ink:#2B332F; --muted:#7C867E; --line:#E1E6DE;
+    --primary:#4B7862; --primary-dark:#3A5F4E; --primary-soft:#E6EEE9;
+    --accent:#A9895A; --accent-soft:#F3ECDD;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);font-family:"Hiragino Sans","Yu Gothic","Noto Sans JP",sans-serif;color:var(--ink);}
+  .wrap{max-width:960px;margin:0 auto;padding:36px 24px 60px;}
+  h1{font-size:19px;margin:0 0 4px;}
+  .sub{font-size:12.5px;color:var(--muted);margin:0 0 30px;}
+  h2.section{font-size:13px;color:var(--muted);letter-spacing:.06em;margin:38px 0 14px;font-weight:700;}
+
+  .erd{display:flex;flex-direction:column;align-items:center;gap:6px;}
+  .erd-row{display:flex;justify-content:center;gap:26px;flex-wrap:wrap;}
+  .rel{font-size:11px;color:var(--muted);text-align:center;padding:2px 0;}
+  .rel .arrow{color:var(--primary);font-weight:700;}
+
+  .tbox{
+    background:var(--panel);border:1.5px solid var(--line);border-radius:10px;overflow:hidden;
+    width:230px;box-shadow:0 4px 14px rgba(43,51,47,.05);
+  }
+  .tbox .thead{background:var(--primary);color:#fff;font-size:13px;font-weight:700;padding:9px 12px;}
+  .tbox.master .thead{background:var(--accent);}
+  .tbox.junction .thead{background:#8C8578;}
+  .tbox .cols{padding:8px 0;}
+  .col{display:flex;justify-content:space-between;padding:4px 12px;font-size:11px;}
+  .col.pk{font-weight:700;color:var(--primary-dark);}
+  .col.fk{color:var(--accent);}
+  .col .t{color:var(--muted);font-size:10px;}
+
+  table.spec{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:12px;margin-bottom:22px;}
+  table.spec th,table.spec td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;}
+  table.spec th{background:#FAFBF9;color:var(--muted);font-size:11px;}
+  table.spec tr:last-child td{border-bottom:none;}
+  .tname{font-size:13.5px;font-weight:700;margin:0 0 6px;display:flex;align-items:center;gap:8px;}
+  .tname .desc{font-weight:400;font-size:11.5px;color:var(--muted);}
+
+  .note-box{background:var(--primary-soft);border-radius:10px;padding:14px 16px;font-size:11.5px;color:var(--primary-dark);line-height:1.7;margin-top:10px;}
+  .footnote{font-size:10.5px;color:var(--muted);margin-top:28px;line-height:1.7;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>ER図・テーブル設計（たたき台）</h1>
+  <p class="sub">DEMOスコープ（認証は簡易ログインのみ／組織共有なし）に絞った最小構成、5テーブルです。</p>
+
+  <h2 class="section">ER図（概略）</h2>
+  <div class="erd">
+    <div class="erd-row">
+      <div class="tbox">
+        <div class="thead">teachers（教員）</div>
+        <div class="cols">
+          <div class="col pk">id<span class="t">PK</span></div>
+          <div class="col">name<span class="t">VARCHAR</span></div>
+          <div class="col">created_at<span class="t">TIMESTAMP</span></div>
+        </div>
+      </div>
+      <div class="tbox master">
+        <div class="thead">units（単元マスタ）</div>
+        <div class="cols">
+          <div class="col pk">id<span class="t">PK</span></div>
+          <div class="col">subject<span class="t">VARCHAR</span></div>
+          <div class="col">name<span class="t">VARCHAR</span></div>
+          <div class="col">sort_order<span class="t">INT</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rel">teachers <span class="arrow">1 → N</span> problems　　units <span class="arrow">1 → N</span> problems</div>
+
+    <div class="erd-row">
+      <div class="tbox">
+        <div class="thead">problems（オリジナル問題）</div>
+        <div class="cols">
+          <div class="col pk">id<span class="t">PK</span></div>
+          <div class="col fk">teacher_id<span class="t">FK</span></div>
+          <div class="col fk">unit_id<span class="t">FK</span></div>
+          <div class="col">title<span class="t">VARCHAR</span></div>
+          <div class="col">difficulty<span class="t">VARCHAR</span></div>
+          <div class="col">default_points<span class="t">INT</span></div>
+          <div class="col">answer_type<span class="t">VARCHAR</span></div>
+          <div class="col">body<span class="t">TEXT</span></div>
+          <div class="col">answer<span class="t">TEXT</span></div>
+          <div class="col">explanation<span class="t">TEXT</span></div>
+          <div class="col">graph_formula<span class="t">VARCHAR(任意)</span></div>
+          <div class="col">image_url<span class="t">VARCHAR(任意)</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rel">problems <span class="arrow">N ← → N</span> tests（test_problemsで中継）</div>
+
+    <div class="erd-row">
+      <div class="tbox">
+        <div class="thead">tests（小テスト）</div>
+        <div class="cols">
+          <div class="col pk">id<span class="t">PK</span></div>
+          <div class="col fk">teacher_id<span class="t">FK</span></div>
+          <div class="col">title<span class="t">VARCHAR</span></div>
+          <div class="col">column_layout<span class="t">INT(1/2)</span></div>
+          <div class="col">paper_size<span class="t">VARCHAR</span></div>
+          <div class="col">row_height_mm<span class="t">INT</span></div>
+          <div class="col">show_answer_blank<span class="t">BOOLEAN</span></div>
+        </div>
+      </div>
+      <div class="tbox junction">
+        <div class="thead">test_problems（中間）</div>
+        <div class="cols">
+          <div class="col pk">id<span class="t">PK</span></div>
+          <div class="col fk">test_id<span class="t">FK</span></div>
+          <div class="col fk">problem_id<span class="t">FK</span></div>
+          <div class="col">order_no<span class="t">INT</span></div>
+          <div class="col">points_override<span class="t">INT(任意)</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="section">テーブル定義</h2>
+
+  <div class="tname">teachers <span class="desc">— 簡易ログインの名前を保存。作成者の判定に使用</span></div>
+  <table class="spec">
+    <tr><th>カラム</th><th>型</th><th>説明</th></tr>
+    <tr><td>id</td><td>SERIAL / UUID</td><td>主キー</td></tr>
+    <tr><td>name</td><td>VARCHAR(100)</td><td>教員名（ログイン時に入力）</td></tr>
+    <tr><td>created_at</td><td>TIMESTAMP</td><td>初回ログイン日時</td></tr>
+  </table>
+
+  <div class="tname">units <span class="desc">— 単元マスタ。数学Ⅰ・Aの8単元を初期データとして投入</span></div>
+  <table class="spec">
+    <tr><th>カラム</th><th>型</th><th>説明</th></tr>
+    <tr><td>id</td><td>SERIAL</td><td>主キー</td></tr>
+    <tr><td>subject</td><td>VARCHAR(20)</td><td>「数学Ⅰ」「数学A」。将来の他科目追加もここに追加するだけでOK</td></tr>
+    <tr><td>name</td><td>VARCHAR(50)</td><td>「数と式」「2次関数」など</td></tr>
+    <tr><td>sort_order</td><td>INT</td><td>表示順</td></tr>
+  </table>
+
+  <div class="tname">problems <span class="desc">— オリジナル問題。DBシートのtest_probをここに統合・拡張</span></div>
+  <table class="spec">
+    <tr><th>カラム</th><th>型</th><th>説明</th></tr>
+    <tr><td>id</td><td>SERIAL / UUID</td><td>主キー</td></tr>
+    <tr><td>teacher_id</td><td>INT (FK)</td><td>作成者</td></tr>
+    <tr><td>unit_id</td><td>INT (FK)</td><td>単元</td></tr>
+    <tr><td>title</td><td>VARCHAR(200)</td><td>問題タイトル</td></tr>
+    <tr><td>difficulty</td><td>VARCHAR(20)</td><td>基礎／標準／応用</td></tr>
+    <tr><td>default_points</td><td>INT</td><td>デフォルト配点（テスト内で上書き可）</td></tr>
+    <tr><td>answer_type</td><td>VARCHAR(20)</td><td>記述／選択／数値</td></tr>
+    <tr><td>body</td><td>TEXT</td><td>問題文</td></tr>
+    <tr><td>answer</td><td>TEXT</td><td>正答</td></tr>
+    <tr><td>explanation</td><td>TEXT</td><td>解説</td></tr>
+    <tr><td>graph_formula</td><td>VARCHAR(200)　NULL可</td><td>関数グラフ（オプション機能）</td></tr>
+    <tr><td>image_url</td><td>VARCHAR(500)　NULL可</td><td>添付画像（オプション機能）</td></tr>
+    <tr><td>created_at / updated_at</td><td>TIMESTAMP</td><td>作成・更新日時</td></tr>
+  </table>
+
+  <div class="tname">tests <span class="desc">— 小テストの見出し情報（テスト作成／解答用紙／答えは同じデータをタブで出し分け）</span></div>
+  <table class="spec">
+    <tr><th>カラム</th><th>型</th><th>説明</th></tr>
+    <tr><td>id</td><td>SERIAL / UUID</td><td>主キー</td></tr>
+    <tr><td>teacher_id</td><td>INT (FK)</td><td>作成者</td></tr>
+    <tr><td>title</td><td>VARCHAR(200)</td><td>テスト名</td></tr>
+    <tr><td>column_layout</td><td>INT</td><td>段組み（1 or 2）</td></tr>
+    <tr><td>paper_size</td><td>VARCHAR(10)</td><td>用紙サイズ（A4等）</td></tr>
+    <tr><td>row_height_mm</td><td>INT</td><td>解答欄の高さ</td></tr>
+    <tr><td>show_answer_blank</td><td>BOOLEAN</td><td>解答欄ありなし</td></tr>
+  </table>
+
+  <div class="tname">test_problems <span class="desc">— テストと問題の中間テーブル（多対多＋並び順・配点上書き）</span></div>
+  <table class="spec">
+    <tr><th>カラム</th><th>型</th><th>説明</th></tr>
+    <tr><td>id</td><td>SERIAL</td><td>主キー</td></tr>
+    <tr><td>test_id</td><td>INT (FK)</td><td>紐づくテスト</td></tr>
+    <tr><td>problem_id</td><td>INT (FK)</td><td>紐づく問題</td></tr>
+    <tr><td>order_no</td><td>INT</td><td>表示順（大問1,2,3…）</td></tr>
+    <tr><td>points_override</td><td>INT　NULL可</td><td>このテストだけの配点（未指定ならproblemsのdefault_pointsを使用）</td></tr>
+  </table>
+
+  <div class="note-box">
+    <b>DEMOでは意図的に含めていないもの</b><br>
+    ・組織／学校・塾テーブル（共有機能はDEMO対象外の仮決定のため）<br>
+    ・認証テーブル（パスワード等）（簡易ログインのみのため、teachers.nameで代用）<br>
+    → どちらも3章の本番決定事項が固まった段階で追加します。unitsのsubjectカラムは他科目拡張にそのまま対応できる設計にしてあります。
+  </div>
+
+  <div class="footnote">
+    ※ 型（VARCHAR(200)など）は目安です。詳細設計の段階で実データに合わせて調整します。
+  </div>
+</div>
+</body>
+</html>

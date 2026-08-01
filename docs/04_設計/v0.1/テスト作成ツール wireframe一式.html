@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>テスト作成ツール ワイヤーフレーム一式</title>
+<style>
+  :root{
+    --bg:#F1F3EE;
+    --panel:#FFFFFF;
+    --ink:#2B332F;
+    --muted:#7C867E;
+    --line:#E1E6DE;
+    --primary:#4B7862;
+    --primary-dark:#3A5F4E;
+    --primary-soft:#E6EEE9;
+    --accent:#A9895A;
+    --accent-soft:#F3ECDD;
+    --warn-bg:#F4EFE3;
+    --warn-ink:#8C7A55;
+    --radius:12px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:#DCE2DA;
+    font-family:"Hiragino Sans","Yu Gothic","Noto Sans JP",sans-serif;
+    color:var(--ink);
+  }
+  .app{display:flex;min-height:100vh;}
+
+  .sidebar{
+    width:230px;flex-shrink:0;background:var(--panel);
+    border-right:1px solid var(--line);padding:22px 16px;
+  }
+  .sidebar h2{font-size:11px;letter-spacing:.08em;color:var(--muted);margin:0 0 14px 4px;font-weight:600;}
+  .nav-item{
+    display:flex;align-items:flex-start;gap:10px;padding:10px 10px;border-radius:9px;
+    cursor:pointer;margin-bottom:2px;font-size:13.5px;color:var(--ink);position:relative;
+  }
+  .nav-item .num{
+    width:20px;height:20px;border-radius:50%;background:var(--bg);color:var(--muted);
+    font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;
+  }
+  .nav-item.active{background:var(--primary-soft);}
+  .nav-item.active .num{background:var(--primary);color:#fff;}
+  .nav-item:hover{background:var(--bg);}
+  .nav-item .sub{display:block;font-size:11px;color:var(--muted);margin-top:2px;}
+  .nav-line{width:1px;background:var(--line);height:10px;margin-left:20px;}
+  .badge-mini{font-size:9.5px;background:var(--warn-bg);color:var(--warn-ink);border-radius:20px;padding:1px 7px;margin-left:auto;align-self:center;}
+  .badge-new{font-size:9.5px;background:var(--primary-soft);color:var(--primary-dark);border-radius:20px;padding:1px 7px;margin-left:auto;align-self:center;}
+  .sidebar-footnote{margin-top:22px;padding-top:14px;border-top:1px dashed var(--line);font-size:11px;color:var(--muted);line-height:1.7;}
+
+  .viewer{flex:1;padding:32px 40px;overflow:auto;position:relative;}
+  .frame-label{font-size:12px;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+  .frame-label b{color:var(--ink);font-size:13px;}
+  .screen{display:none;background:var(--bg);border-radius:16px;padding:26px;max-width:980px;}
+  .screen.active{display:block;}
+
+  .topbar{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px;}
+  .brand .beta{font-size:10.5px;color:var(--primary);font-weight:700;letter-spacing:.06em;}
+  .brand h1{font-size:19px;margin:2px 0 0;}
+  .top-actions{display:flex;gap:8px;align-items:center;}
+  .btn{font-size:12.5px;padding:7px 13px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;}
+  .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff;font-weight:600;}
+  .btn.ghost{background:transparent;}
+  .icon{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6;vertical-align:-3px;margin-right:4px;}
+
+  .teacher-pill{
+    display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink);
+    background:#fff;border:1px solid var(--line);border-radius:20px;padding:4px 10px 4px 4px;
+  }
+  .teacher-avatar{
+    width:22px;height:22px;border-radius:50%;background:var(--primary);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;
+  }
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:26px;}
+
+  /* Login */
+  .login-wrap{display:flex;justify-content:center;padding:50px 0;}
+  .login-card{width:360px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:32px;text-align:center;}
+  .login-card .mark{
+    width:44px;height:44px;border-radius:10px;background:var(--primary-soft);margin:0 auto 16px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .login-card h3{font-size:16px;margin:0 0 6px;}
+  .login-card p.note{font-size:12px;color:var(--muted);margin:0 0 20px;line-height:1.6;}
+  .login-card input{
+    width:100%;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:13.5px;margin-bottom:12px;background:#fbfbf9;
+  }
+  .login-card .memo{
+    margin-top:18px;text-align:left;font-size:11px;color:var(--warn-ink);background:var(--warn-bg);
+    border-radius:8px;padding:10px 12px;line-height:1.6;
+  }
+
+  /* Home */
+  .grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:20px;}
+  .action{border:1px solid var(--line);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:5px;cursor:pointer;}
+  .action:hover{border-color:var(--primary);}
+  .action.primary{background:var(--primary);border-color:var(--primary);color:#fff;}
+  .action .aicon{width:30px;height:30px;border-radius:8px;background:var(--bg);display:flex;align-items:center;justify-content:center;margin-bottom:4px;}
+  .action.primary .aicon{background:rgba(255,255,255,.18);}
+  .action .aicon svg{width:16px;height:16px;stroke:var(--primary);fill:none;stroke-width:1.6;}
+  .action.primary .aicon svg{stroke:#fff;}
+  .action .label{font-size:14.5px;font-weight:700;}
+  .action .desc{font-size:12px;color:var(--muted);}
+  .action.primary .desc{color:rgba(255,255,255,.8);}
+
+  .tabs{display:flex;gap:6px;margin-bottom:16px;}
+  .tab{padding:8px 16px;border-radius:8px 8px 0 0;font-size:13px;cursor:pointer;border:1px solid var(--line);border-bottom:none;background:var(--bg);color:var(--muted);}
+  .tab.active{background:var(--panel);color:var(--ink);font-weight:700;}
+  .tab.disabled{color:#B7BEB5;cursor:not-allowed;}
+  .unit-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px;}
+  .unit{border:1px solid var(--line);border-radius:9px;padding:14px 16px;font-size:13.5px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;}
+  .unit:hover{border-color:var(--accent);}
+  .unit .tag{font-size:11px;background:var(--accent-soft);color:var(--warn-ink);padding:2px 8px;border-radius:20px;}
+  .subject-label{font-size:12px;color:var(--muted);margin-bottom:4px;}
+  .subject-value{display:inline-block;background:var(--primary-soft);color:var(--primary-dark);font-size:13px;font-weight:700;padding:6px 14px;border-radius:8px;margin-bottom:18px;}
+
+  .test-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+  .test-name{font-size:13px;border:1px solid var(--line);border-radius:8px;padding:9px 12px;width:280px;background:#fff;}
+  .toolgroup{display:flex;gap:8px;}
+  .subtabs{display:flex;gap:4px;margin:14px 0 12px;}
+  .subtab{padding:7px 16px;font-size:13px;border-radius:8px;cursor:pointer;color:var(--muted);}
+  .subtab.active{background:var(--primary-soft);color:var(--primary-dark);font-weight:700;}
+  .settings-row{display:flex;gap:14px;align-items:center;font-size:12.5px;color:var(--muted);margin-bottom:14px;flex-wrap:wrap;}
+  .settings-row .pill{border:1px solid var(--line);border-radius:20px;padding:5px 12px;background:#fff;}
+  .layout-two{display:grid;grid-template-columns:1fr 260px;gap:16px;}
+  .preview{background:#fff;border:1px solid var(--line);border-radius:10px;min-height:300px;padding:22px;}
+  .preview .ptitle{font-size:11px;color:var(--accent);margin-bottom:4px;}
+  .preview .pname{font-size:17px;font-weight:700;border-bottom:2px solid var(--ink);padding-bottom:10px;margin-bottom:16px;display:flex;justify-content:space-between;}
+  .preview .field{border:1px solid var(--line);border-radius:6px;padding:6px 10px;font-size:12px;display:inline-block;margin-right:8px;color:var(--muted);}
+  .preview .empty{color:var(--muted);text-align:center;margin-top:60px;font-size:13px;}
+  .problem-list{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px;}
+  .problem-list h4{font-size:12.5px;margin:0 0 4px;}
+  .problem-list .count{font-size:11px;color:var(--muted);margin-bottom:10px;}
+  .plitem{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:7px;font-size:12.5px;display:flex;justify-content:space-between;align-items:center;}
+  .plitem span.n{color:var(--muted);font-size:11px;}
+
+  /* Original problem form */
+  .form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px;}
+  .field-block label{font-size:12px;color:var(--muted);display:block;margin-bottom:5px;}
+  .field-block .box{border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:13px;background:#fff;color:var(--ink);}
+  .expandable{cursor:pointer;position:relative;}
+  .expandable:hover{border-color:var(--primary);}
+  .expandable .hint{position:absolute;right:9px;top:9px;font-size:10.5px;color:var(--muted);}
+  .field-block .box.tall{min-height:70px;color:var(--muted);}
+
+  .toggle-row{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin:18px 0 8px;cursor:pointer;user-select:none;}
+  .toggle-row input{width:16px;height:16px;accent-color:var(--primary);}
+  .optional-panel{display:none;border:1px dashed #C9D2C5;border-radius:10px;padding:16px;background:var(--primary-soft);margin-bottom:6px;}
+  .optional-panel.open{display:block;}
+
+  .graph-row{display:flex;align-items:center;gap:14px;}
+  .graph-preview{
+    background:#fff;border-radius:8px;padding:8px;cursor:zoom-in;transition:transform .18s ease, box-shadow .18s ease;
+    transform-origin:left center;
+  }
+  .graph-preview:hover, .graph-preview.enlarged{
+    transform:scale(2.6);box-shadow:0 10px 30px rgba(0,0,0,.18);position:relative;z-index:5;
+  }
+
+  .dropzone{
+    border:1.5px dashed #C9D2C5;border-radius:10px;padding:22px;text-align:center;background:#fff;
+    color:var(--muted);font-size:12.5px;cursor:pointer;
+  }
+  .dropzone svg{width:22px;height:22px;stroke:var(--muted);fill:none;stroke-width:1.5;margin-bottom:6px;}
+
+  .form-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:6px;}
+
+  /* Side expand panel */
+  .side-panel{
+    position:fixed;top:0;right:0;height:100%;width:420px;background:var(--primary-dark);color:#fff;
+    transform:translateX(100%);transition:transform .22s ease;z-index:50;
+    display:flex;flex-direction:column;box-shadow:-10px 0 30px rgba(0,0,0,.15);
+  }
+  .side-panel.open{transform:translateX(0);}
+  .side-panel .sp-head{padding:20px 22px;font-size:15px;font-weight:700;border-bottom:1px solid rgba(255,255,255,.15);}
+  .side-panel textarea{
+    flex:1;margin:18px 22px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.2);
+    border-radius:8px;color:#fff;font-size:14px;padding:14px;resize:none;line-height:1.7;
+  }
+  .side-panel textarea::placeholder{color:rgba(255,255,255,.45);}
+  .side-panel .sp-foot{display:flex;justify-content:flex-end;gap:8px;padding:16px 22px;border-top:1px solid rgba(255,255,255,.15);}
+  .sp-btn{padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;border:1px solid rgba(255,255,255,.4);background:transparent;color:#fff;}
+  .sp-btn.primary{background:#fff;color:var(--primary-dark);border-color:#fff;font-weight:700;}
+
+  .list-row{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--line);border-radius:9px;padding:13px 16px;margin-bottom:8px;background:#fff;}
+  .list-row .meta{font-size:11.5px;color:var(--muted);margin-top:3px;}
+  .list-row .title{font-size:13.5px;font-weight:700;}
+  .list-row .actions{display:flex;gap:6px;}
+  .empty-state{text-align:center;padding:50px 0;color:var(--muted);font-size:13px;}
+
+  .placeholder-wrap{text-align:center;padding:70px 20px;color:var(--muted);}
+  .placeholder-wrap .big{font-size:16px;color:var(--ink);font-weight:700;margin-bottom:8px;}
+  .placeholder-wrap svg{width:34px;height:34px;stroke:var(--muted);fill:none;stroke-width:1.4;margin-bottom:14px;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="sidebar">
+    <h2>画面遷移（DEMOスコープ）</h2>
+    <div class="nav-item active" data-target="login"><div class="num">1</div><div>ログイン<div class="sub">簡易・名前のみ</div></div><div class="badge-new">追加</div></div>
+    <div class="nav-line"></div>
+    <div class="nav-item" data-target="home"><div class="num">2</div><div>ホーム</div></div>
+    <div class="nav-line"></div>
+    <div class="nav-item" data-target="subject"><div class="num">3</div><div>科目選択</div></div>
+    <div class="nav-line"></div>
+    <div class="nav-item" data-target="testcreate"><div class="num">4</div><div>小テスト作成<span class="sub">テスト作成/解答用紙/答え</span></div></div>
+    <div class="nav-line"></div>
+    <div class="nav-item" data-target="original"><div class="num">5</div><div>オリジナル問題作成</div></div>
+    <div class="nav-line"></div>
+    <div class="nav-item" data-target="originalview"><div class="num">6</div><div>保存済みオリジナル問題閲覧</div></div>
+    <div class="nav-line"></div>
+    <div class="nav-item" data-target="testlist"><div class="num">7</div><div>保存済みテスト一覧</div></div>
+    <div class="nav-line"></div>
+    <div class="nav-item" data-target="regular"><div class="num">8</div><div>定期テスト作成<div class="sub">準備中</div></div><div class="badge-mini">未実装</div></div>
+
+    <div class="sidebar-footnote">
+      ログインは名前のみの仮ログインです（作成者の判定用）。SSO等の本番認証方式は別途決定が必要です（要件定義書6章）。<br><br>
+      画像添付・関数グラフはオプション機能（チェックでオン）として追加しました。
+    </div>
+  </div>
+
+  <div class="viewer">
+
+    <!-- 1. LOGIN -->
+    <div class="screen active" id="login">
+      <div class="frame-label"><b>① ログイン画面</b> — 名前のみの簡易ログイン（DEMO仮決定）</div>
+      <div class="login-wrap">
+        <div class="login-card">
+          <div class="mark">
+            <svg width="20" height="20" viewBox="0 0 24 24" stroke="#4B7862" fill="none" stroke-width="1.6"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c1.2-4 4-6 7-6s5.8 2 7 6"/></svg>
+          </div>
+          <h3>お名前を入力してください</h3>
+          <p class="note">作成した問題・テストの作成者を記録するための簡易ログインです。</p>
+          <input type="text" placeholder="例：山田 太郎" value="山田 太郎" id="teacherInput">
+          <button class="btn primary" style="width:100%;padding:11px;" onclick="loginContinue()">続ける</button>
+          <div class="memo">※ SSO／会員登録など本番の認証方式は未定です。DEMOでは入力された名前を作成者として扱う仮ルールとします。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. HOME -->
+    <div class="screen" id="home">
+      <div class="frame-label"><b>② ホーム（初期画面）</b></div>
+      <div class="topbar">
+        <div class="brand"><div class="beta">Beta</div><h1>テスト作成ツール</h1></div>
+        <div class="top-actions">
+          <div class="teacher-pill"><div class="teacher-avatar" id="avatarChar">山</div><span id="teacherName">山田 太郎</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="subject-label">何から始めますか？</div>
+        <div class="grid2">
+          <div class="action primary" onclick="go('subject')">
+            <div class="aicon"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div>
+            <div class="label">テスト作成</div>
+            <div class="desc">科目・単元を選んで小テストを作成します</div>
+          </div>
+          <div class="action" onclick="go('original')">
+            <div class="aicon"><svg viewBox="0 0 24 24"><path d="M4 20l3.5-1 10-10-2.5-2.5-10 10L4 20z"/></svg></div>
+            <div class="label">オリジナル問題作成</div>
+            <div class="desc">問題文・正答・解説を登録します</div>
+          </div>
+          <div class="action" onclick="go('originalview')">
+            <div class="aicon"><svg viewBox="0 0 24 24"><path d="M6 4h9l3 3v13H6z"/><path d="M9 10h6M9 14h6"/></svg></div>
+            <div class="label">保存済みオリジナル問題閲覧</div>
+            <div class="desc">登録済みの問題を確認・再編集します</div>
+          </div>
+          <div class="action" onclick="go('testlist')">
+            <div class="aicon"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg></div>
+            <div class="label">保存済みテスト問題閲覧</div>
+            <div class="desc">作成済みのテストを確認・再編集します</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. SUBJECT SELECT -->
+    <div class="screen" id="subject">
+      <div class="frame-label"><b>③ 科目選択画面</b></div>
+      <div class="topbar">
+        <div class="brand"><div class="beta">Beta</div><h1>テスト作成ツール</h1></div>
+        <button class="btn ghost" onclick="go('home')">← ホームに戻る</button>
+      </div>
+      <div class="card">
+        <div class="tabs">
+          <div class="tab active">小テスト</div>
+          <div class="tab disabled">定期テスト（準備中）</div>
+        </div>
+        <div class="subject-label">科目</div>
+        <div class="subject-value">数学 Ⅰ・A</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:20px;">単元の選択は次の「小テスト作成」画面で行います（問題リストから単元別に選択）</div>
+        <button class="btn primary" style="padding:11px 24px;" onclick="go('testcreate')">この科目でテスト作成へ進む →</button>
+      </div>
+    </div>
+
+    <!-- 4. TEST CREATE -->
+    <div class="screen" id="testcreate">
+      <div class="frame-label"><b>④ 小テスト作成画面</b></div>
+      <div class="topbar">
+        <div class="brand"><div class="beta">Beta</div><h1>テスト作成ツール</h1></div>
+        <div class="top-actions">
+          <button class="btn ghost" onclick="go('subject')">← 一覧に戻る</button>
+          <button class="btn primary">保存</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="test-toolbar">
+          <input class="test-name" value="無題の小テスト">
+          <div class="toolgroup">
+            <button class="btn">フォーマット選択</button>
+            <button class="btn">印刷</button>
+          </div>
+        </div>
+        <div class="subtabs">
+          <div class="subtab active" onclick="tt(this,'t-create')">テスト作成</div>
+          <div class="subtab" onclick="tt(this,'t-answer-sheet')">解答用紙</div>
+          <div class="subtab" onclick="tt(this,'t-answer')">答え</div>
+        </div>
+        <div class="settings-row">
+          <label><input type="checkbox" checked> 解答欄あり</label>
+          <span class="pill">段組み：1段組み</span>
+          <span class="pill">用紙：A4</span>
+          <span class="pill">高さ：42mm</span>
+          <span class="pill">選択中：2問／合計 10点</span>
+        </div>
+        <div class="layout-two">
+          <div id="t-create" class="tt-pane">
+            <div class="preview">
+              <div class="ptitle">小テスト</div>
+              <div class="pname">無題の小テスト <span style="font-size:11px;font-weight:400;color:var(--muted);">クラス／氏名／　点</span></div>
+              <div class="field">大問1. 数と式の計算問題がここに入ります…</div>
+            </div>
+          </div>
+          <div id="t-answer-sheet" class="tt-pane" style="display:none;">
+            <div class="preview">
+              <div class="ptitle">解答用紙</div>
+              <div class="pname">無題の小テスト <span style="font-size:11px;font-weight:400;color:var(--muted);">クラス／氏名</span></div>
+              <div class="empty">解答記入欄がここに表示されます</div>
+            </div>
+          </div>
+          <div id="t-answer" class="tt-pane" style="display:none;">
+            <div class="preview">
+              <div class="ptitle">答え</div>
+              <div class="pname">無題の小テスト</div>
+              <div class="empty">正答・配点がここに表示されます</div>
+            </div>
+          </div>
+          <div class="problem-list">
+            <h4>登録問題</h4>
+            <div class="count">80問</div>
+            <div class="plitem">数学Ⅰ-数と式 <span class="n">10問</span></div>
+            <div class="plitem">数学Ⅰ-集合と命題 <span class="n">10問</span></div>
+            <div class="plitem">数学Ⅰ-2次関数 <span class="n">10問</span></div>
+            <div class="plitem">数学Ⅰ-図形と計量 <span class="n">10問</span></div>
+            <div style="font-size:10.5px;color:var(--muted);border-top:1px dashed var(--line);margin-top:8px;padding-top:8px;">
+              将来対応：数学ⅡBなど他科目の問題読み込みにも対応予定（DEMO対象外）
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. ORIGINAL PROBLEM CREATE -->
+    <div class="screen" id="original">
+      <div class="frame-label"><b>⑤ オリジナル問題作成画面</b> — 問題文・正答はクリックで拡大入力／グラフ・画像はオプション</div>
+      <div class="topbar">
+        <div class="brand"><div class="beta">Beta</div><h1>テスト作成ツール</h1></div>
+        <button class="btn ghost" onclick="go('home')">戻る</button>
+      </div>
+      <div class="card">
+        <div class="form-grid">
+          <div class="field-block"><label>問題タイトル</label><div class="box">　</div></div>
+          <div class="field-block"><label>科目</label><div class="box">数学Ⅰ</div></div>
+          <div class="field-block"><label>単元</label><div class="box">数と式</div></div>
+        </div>
+        <div class="form-grid">
+          <div class="field-block"><label>難易度</label><div class="box">基礎</div></div>
+          <div class="field-block"><label>配点</label><div class="box">5</div></div>
+          <div class="field-block"><label>解答形式</label><div class="box">記述</div></div>
+        </div>
+
+        <div class="field-block" style="margin-bottom:14px;">
+          <label>問題文</label>
+          <div class="box tall expandable" onclick="openPanel('問題文','問題文をここに入力してください')">
+            クリックして入力…<span class="hint">↗ 拡大して入力</span>
+          </div>
+        </div>
+
+        <div class="form-grid" style="grid-template-columns:1fr 1fr;margin-bottom:6px;">
+          <div class="field-block">
+            <label>正答</label>
+            <div class="box tall expandable" onclick="openPanel('正答','正答をここに入力してください')">
+              クリックして入力…<span class="hint">↗ 拡大して入力</span>
+            </div>
+          </div>
+          <div class="field-block"><label>解説</label><div class="box tall">　</div></div>
+        </div>
+
+        <div class="toggle-row" onclick="toggleOptional('graphPanel')">
+          <input type="checkbox" id="graphCheck"> 関数グラフを追加する（任意・1次/2次関数のみ対応）
+        </div>
+        <div class="optional-panel" id="graphPanel">
+          <div class="graph-row">
+            <div class="box" style="flex:1;background:#fff;">例：y = x^2 + 3x - 1</div>
+            <svg class="graph-preview" width="90" height="60" viewBox="0 0 90 60" onclick="this.classList.toggle('enlarged')">
+              <polyline points="5,50 20,20 45,45 70,10 85,35" fill="none" stroke="#4B7862" stroke-width="2"/>
+            </svg>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:8px;">グラフはクリック、またはカーソルを合わせると拡大表示されます</div>
+        </div>
+
+        <div class="toggle-row" onclick="toggleOptional('imagePanel')">
+          <input type="checkbox" id="imageCheck"> 画像を添付する（任意）
+        </div>
+        <div class="optional-panel" id="imagePanel">
+          <div class="dropzone">
+            <svg viewBox="0 0 24 24"><path d="M4 17V6a2 2 0 012-2h12a2 2 0 012 2v11"/><path d="M4 17l5-5 4 4 3-3 4 4"/><circle cx="8.5" cy="8.5" r="1.5"/></svg>
+            <div>クリックまたはドラッグ＆ドロップで画像を追加</div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn">キャンセル</button>
+          <button class="btn primary">問題を保存</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. ORIGINAL PROBLEM VIEW -->
+    <div class="screen" id="originalview">
+      <div class="frame-label"><b>⑥ 保存済みオリジナル問題閲覧画面</b></div>
+      <div class="topbar">
+        <div class="brand"><div class="beta">Beta</div><h1>テスト作成ツール</h1></div>
+        <div class="top-actions">
+          <button class="btn ghost" onclick="go('home')">← ホームに戻る</button>
+          <button class="btn primary" onclick="go('original')">＋ 新規作成</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="tabs">
+          <div class="tab active">数学Ⅰ</div>
+          <div class="tab">数学A</div>
+        </div>
+        <div class="list-row">
+          <div><div class="title">2次関数の最大最小を求める問題</div><div class="meta">数学Ⅰ・2次関数／基礎／配点5／作成者：山田 太郎</div></div>
+          <div class="actions"><button class="btn">編集</button><button class="btn">削除</button></div>
+        </div>
+        <div class="list-row">
+          <div><div class="title">因数分解の基本問題</div><div class="meta">数学Ⅰ・数と式／基礎／配点5／作成者：山田 太郎</div></div>
+          <div class="actions"><button class="btn">編集</button><button class="btn">削除</button></div>
+        </div>
+        <div class="list-row">
+          <div><div class="title">場合の数：順列と組合せ</div><div class="meta">数学A・場合の数と確率／標準／配点8／作成者：佐藤 花子</div></div>
+          <div class="actions"><button class="btn">編集</button><button class="btn">削除</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. TEST LIST -->
+    <div class="screen" id="testlist">
+      <div class="frame-label"><b>⑦ 保存済みテスト一覧</b></div>
+      <div class="topbar">
+        <div class="brand"><div class="beta">Beta</div><h1>テスト作成ツール</h1></div>
+        <button class="btn ghost" onclick="go('home')">← ホームに戻る</button>
+      </div>
+      <div class="card">
+        <div class="test-toolbar">
+          <div class="subject-label" style="margin:0;">テスト一覧</div>
+          <div class="toolgroup">
+            <button class="btn">フォーマット選択</button>
+            <button class="btn primary" onclick="go('subject')">＋ 新規作成</button>
+          </div>
+        </div>
+        <div class="empty-state">保存済みのテストはまだありません。<br><br>
+          <button class="btn primary" onclick="go('subject')">小テストを作成</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8. REGULAR TEST (placeholder) -->
+    <div class="screen" id="regular">
+      <div class="frame-label"><b>⑧ 定期テスト作成画面</b> — DEMO仮決定：未実装（準備中表示のみ）</div>
+      <div class="topbar">
+        <div class="brand"><div class="beta">Beta</div><h1>テスト作成ツール</h1></div>
+        <button class="btn ghost" onclick="go('subject')">← 科目選択に戻る</button>
+      </div>
+      <div class="card">
+        <div class="placeholder-wrap">
+          <svg viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"/></svg>
+          <div class="big">定期テスト作成は準備中です</div>
+          <div>複数単元をまたぐテスト作成機能は、次のフェーズで対応予定です。</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Slide-in side panel for expanded text input -->
+  <div class="side-panel" id="sidePanel">
+    <div class="sp-head" id="spTitle">問題文</div>
+    <textarea id="spTextarea" placeholder=""></textarea>
+    <div class="sp-foot">
+      <button class="sp-btn" onclick="closePanel()">キャンセル</button>
+      <button class="sp-btn primary" onclick="closePanel()">確定</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const nav = document.querySelector('.nav-item[data-target="'+id+'"]');
+  if(nav) nav.classList.add('active');
+}
+document.querySelectorAll('.nav-item').forEach(item=>{
+  item.addEventListener('click', ()=> go(item.dataset.target));
+});
+function tt(el,paneId){
+  const parent = el.parentElement;
+  parent.querySelectorAll('.subtab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.tt-pane').forEach(p=>p.style.display='none');
+  document.getElementById(paneId).style.display='block';
+}
+function openPanel(title, placeholder){
+  document.getElementById('spTitle').textContent = title;
+  document.getElementById('spTextarea').placeholder = placeholder;
+  document.getElementById('sidePanel').classList.add('open');
+}
+function closePanel(){
+  document.getElementById('sidePanel').classList.remove('open');
+}
+function toggleOptional(id){
+  document.getElementById(id).classList.toggle('open');
+}
+function loginContinue(){
+  const val = document.getElementById('teacherInput').value || '山田 太郎';
+  document.getElementById('teacherName').textContent = val;
+  document.getElementById('avatarChar').textContent = val.charAt(0);
+  go('home');
+}
+</script>
+</body>
+</html>

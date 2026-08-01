@@ -1,0 +1,19 @@
+# JavaScript / TypeScript
+node_modules/
+coverage/
+*.log
+
+# Build and distribution artifacts
+dist/
+release/
+out/
+
+# Local application data and secrets
+app-data/
+.env
+!.env.example
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+*.swp

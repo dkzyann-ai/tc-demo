@@ -1,0 +1,8 @@
+{
+  "name": "test-creator-demo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "学校教員向けテスト作成ツール",
+  "type": "module",
+  "scripts": {}
+}
