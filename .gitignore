@@ -1,5 +1,7 @@
 # JavaScript / TypeScript
 node_modules/
+.npm-cache/
+tests/unit/.local-store-fixture/
 coverage/
 *.log
 

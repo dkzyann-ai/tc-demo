@@ -4,5 +4,43 @@
   "private": true,
   "description": "学校教員向けテスト作成ツール",
   "type": "module",
-  "scripts": {}
+  "main": "src/desktop/main.cjs",
+  "scripts": {
+    "dev": "concurrently -k \"vite --host 127.0.0.1\" \"wait-on http://127.0.0.1:5173 && electron .\"",
+    "dev:renderer": "vite --host 127.0.0.1",
+    "dev:desktop": "wait-on http://127.0.0.1:5173 && electron .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "build:renderer": "npm run typecheck && vite build",
+    "build": "npm run build:portable",
+    "build:win": "npm run build:portable",
+    "build:win-dir": "npm run build:renderer && electron-builder --win dir",
+    "build:portable": "npm run build:renderer && electron-builder --win portable"
+  },
+  "build": {
+    "appId": "jp.school.testCreatorDemo",
+    "productName": "テスト作成ツール DEMO",
+    "electronLanguages": ["ja", "en-US"],
+    "compression": "maximum",
+    "directories": { "output": "release" },
+    "files": ["dist/**/*", "src/desktop/**/*", "package.json"],
+    "win": { "target": "portable" },
+    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true }
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^6.0.5",
+    "concurrently": "^10.0.4",
+    "electron": "^43.2.0",
+    "electron-builder": "^26.15.3",
+    "typescript": "^7.0.2",
+    "vite": "^8.2.0",
+    "vitest": "^4.1.10",
+    "wait-on": "^9.1.0"
+  }
 }

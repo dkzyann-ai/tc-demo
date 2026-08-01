@@ -47,3 +47,10 @@
 `dist/`、`release/`、`out/`、`coverage/`、`node_modules/`、`app-data/`は生成物またはローカルデータであり、実装の恒久的な配置先にしない。これらはGit管理しない。
 
 `.env.example`は、実行時に必要な環境変数が導入された場合のみ追加する。`.codex/config.toml`は、このリポジトリに固有のCodex設定が必要になった場合のみ追加する。
+
+## Electron方針
+
+- DEMOのデスクトップアプリはElectronを採用し、React + TypeScriptの画面をWindows向けに配布する。
+- src/desktop/にはElectronのメインプロセス、preloadスクリプト、Windowsアプリ固有の連携を配置する。
+- メインプロセス・preloadスクリプト・画面側を分離する。
+- nodeIntegrationを有効にせず、contextIsolationを有効にする。画面側にはpreload経由の最小限のAPIだけを公開する。
